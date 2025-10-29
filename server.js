@@ -652,10 +652,16 @@ async function callLLM(messages) {
     // no provider configured
     if (!aimlKey && !openaiKey) return null;
 
-    // ensure global fetch exists (Node 18+). If not present, dynamically import node-fetch
+    // ensure global fetch exists (Node 18+). If not present, attempt a safe fallback
     if (typeof fetch === "undefined") {
-        // eslint-disable-next-line no-undef
-        global.fetch = (await import("node-fetch")).default;
+        try {
+            // eslint-disable-next-line no-undef
+            global.fetch = (await import("node-fetch")).default;
+        } catch (e) {
+            throw new Error(
+                "fetch is not available in this Node runtime. Please run on Node 18+ (recommended: 20.x) or add 'node-fetch' as a dependency."
+            );
+        }
     }
 
     // Prepare OpenAI-style payload
